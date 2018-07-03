@@ -291,34 +291,36 @@ export default {
                 port = $('.port input').val();
 
             //传入给后台的数据
-            var objData = {
-                deviceCode: this.ruleForm.machineCode,
-                deviceProName: this.ruleForm.factory,
-                deviceModel: this.ruleForm.model,
-                deviceIpAddr: this.ruleForm.IP,
-                devicePort: parseInt(this.ruleForm.port),
-                deviceHome: this.ruleForm.ascriptionA,
-                slotNum: modInt
-            }
-
             this.$refs[formName].validate((valid) => {
                 if (valid) {
-                    $.ajax({
+                    _this.$axios({
                         url: baseUrl + '/device/addDevice',
-                        type: 'POST',
-                        dataType: 'json',
-                        contentType: 'application/json',
-                        data: JSON.stringify(objData),
-                        // dataType: 'json',
-                        success: function(res) {
+                        method: 'post',
+                        data: _this.$qs.stringify({
+                            deviceCode: this.ruleForm.machineCode,
+                            deviceProName: this.ruleForm.factory,
+                            deviceModel: this.ruleForm.model,
+                            deviceIpAddr: this.ruleForm.IP,
+                            devicePort: parseInt(this.ruleForm.port),
+                            deviceHome: this.ruleForm.ascriptionA,
+                            slotNum: modInt
+                        })
+                    })
+                    .then(res => {
+                        if (res.data === 1) {
                             _this.$message({
-                                message: '成功',
-                                type: 'success'
-                            });
-                        },
-                        error: function(err) {
-                            console.log(err);
-                        }
+                               message: '设备码重复',
+                               type: 'warning'
+                           });
+                       } else if (res.data === 0) {
+                           _this.$message({
+                              message: '成功',
+                              type: 'success'
+                          });
+                       }
+                    })
+                    .catch(err => {
+                        console.log(err);
                     })
                     this.dialogVisible = false;
                 } else {
@@ -392,7 +394,7 @@ html, body, #app, .el-container {
 .deviceManager {
     .el-header {
         line-height: 60px;
-        font-size: 22px;
+        font-size: 18px;
         color: #3399ff;
         background-color: #fff;
         position: relative;
@@ -420,7 +422,6 @@ html, body, #app, .el-container {
                 color: #333;
                 font-size: 16px;
                 letter-spacing: 3px;
-                font-weight: bold;
                 .el-input {
                     margin-right: 20px;
                     width: auto;

@@ -3,7 +3,7 @@
         <el-header class="el-head-child">
             商户列表
         </el-header>
-        <div class="search" style="background-color: #f0f3f6;padding-top: 20px;">
+        <div class="search">
             <div class="inputs">
                 <div>
                     <span>商品名称/编号/关键字 : </span>
@@ -264,10 +264,10 @@ import {baseUrl} from '../assets/api/api'
              */
             tableInit: function(page, size) {
                 var _this = this;
-                $.ajax({
+                this.$axios({
                     url: baseUrl + '/merchant/searchMerchantList',
-                    type: 'post',
-                    data: {
+                    method: 'post',
+                    data: _this.$qs.stringify({
                         mercName: _this.searchValue.commodityName,
                         startTime: _this.searchValue.timeBegin,
                         endTime: _this.searchValue.timeEnd,
@@ -277,29 +277,28 @@ import {baseUrl} from '../assets/api/api'
                         agentSeq: _this.searchValue.agentValue,
                         page: page,
                         size: size
-                    },
-                    success: function(res) {
-                        console.log(res);
-                        res.dataInfo.forEach(function(ele, index) {
-                            //添加新属性remainTime
-                            ele.mercBeginTime = new Date(ele.mercBeginTime).getFullYear() + '-' + (new Date(ele.mercBeginTime).getMonth() + 1) + '-' + new Date(ele.mercBeginTime).getDate();
-                            // 添加地区
-                            ele.area = ele.provinceName + ele.cityName;
-                            //行业
-                            if (ele.mercStatus == 0) {
-                                ele.mercStatus = '启用';
-                            } else if (ele.mercStatus == 1) {
-                                ele.mercStatus = '停止';
-                            } else if (ele.mercStatus == 2) {
-                                ele.mercStatus = '冻结';
-                            }
-                        })
-                        _this.tableData = res.dataInfo;
-                        _this.page.pagecount = res.count;
-                    },
-                    error: function(err) {
-                        console.log(err);
-                    }
+                    })
+                })
+                .then(res => {
+                    res.data.dataInfo.forEach(function(ele, index) {
+                        //添加新属性remainTime
+                        ele.mercBeginTime = new Date(ele.mercBeginTime).getFullYear() + '-' + (new Date(ele.mercBeginTime).getMonth() + 1) + '-' + new Date(ele.mercBeginTime).getDate();
+                        // 添加地区
+                        ele.area = ele.provinceName + ele.cityName;
+                        //行业
+                        if (ele.mercStatus == 0) {
+                            ele.mercStatus = '启用';
+                        } else if (ele.mercStatus == 1) {
+                            ele.mercStatus = '停止';
+                        } else if (ele.mercStatus == 2) {
+                            ele.mercStatus = '冻结';
+                        }
+                    })
+                    _this.tableData = res.data.dataInfo;
+                    _this.page.pagecount = res.data.count;
+                })
+                .catch(err => {
+                    console.log(err);
                 })
             },
             /**
@@ -432,6 +431,10 @@ html, body, #app, .el-container {
             letter-spacing: 3px;
         }
     }
+    .search {
+        background-color: #f0f3f6;
+        padding: 14px 0;
+    }
     .el-header.el-head-child {
         color: #3399ff;
         font-size: 18px;
@@ -477,9 +480,6 @@ html, body, #app, .el-container {
     }
     .inputs .el-button span {
         color: #fff;
-    }
-    .el-table {
-        margin-top: 20px;
     }
     .el-table thead {
         color: #333;

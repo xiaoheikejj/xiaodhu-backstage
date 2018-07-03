@@ -5,7 +5,6 @@
                 <el-menu-item index="1">代理商权限</el-menu-item>
                 <el-menu-item index="2" @click='userPower'>用户权限</el-menu-item>
             </el-menu>
-            <el-button type="primary" @click="addNew">新增</el-button>
             <el-button type="primary" @click='jump'>权限配置</el-button>
         </el-header>
         <!-- 搜索input -->
@@ -34,7 +33,7 @@
             <el-table-column prop="agentPackName" label="代理商权限角色"></el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button type="text" size="small" @click='modifyJudge'>修改</el-button>
+                    <el-button type="text" size="small" @click='dialog.modify.status = true'>修改</el-button>
                     <el-button type="text" size="small" @click="dialog.rewritePw = true">重置密码</el-button>
                 </template>
             </el-table-column>
@@ -220,26 +219,6 @@ export default {
                 console.log(err);
             })
         },
-        addNew: function() {
-            var _this = this;
-            this.dialogVisible = true;
-            //获取代理商名字
-            this.$axios.get(baseUrl + '/agent/getNewAgent').then(res => {
-                _this.dialogAgentName = res.data;
-            }).catch(err => {
-                console.log(err);
-            })
-        },
-        modifyJudge: function() {
-            var _this = this;
-            this.$nextTick(function() {
-                if (_this.row.agentPackName != null) {
-                    _this.dialog.modify.status = true;
-                } else {
-                    _this.addNew();
-                }
-            })
-        },
         /**
          * 重置密码
          * @return {[type]} [description]
@@ -263,74 +242,24 @@ export default {
         // 修改
         modifyClick: function() {
             var _this = this;
-            $.ajax({
+            this.$axios({
                 url: baseUrl + '/agentpackage/updateAgentAndPackage',
-                type: 'post',
-                data: {
+                method: 'post',
+                data: _this.$qs.stringify({
                     agentSeq: _this.row.agentSeq,
                     agentPackSeq: _this.dialog.modify.role
-                },
-                success: function(res) {
-                    _this.dialog.modify.status = false;
-                    _this.tableInit(1, 10);
-                    _this.page.pagecurrent = 1;
-                },
-                error: function(err) {
-                    console.log(err);
-                }
+                })
+            })
+            .then(res => {
+                _this.dialog.modify.status = false;
+                _this.tableInit(1, 10);
+                _this.page.pagecurrent = 1;
+            })
+            .catch(err => {
+                console.log(err);
             })
         },
-        checkAccount: function(formName) {
-            var _this = this;
-            //代理商电话
-            var agentPhone = $('.hover').attr('query');
 
-            this.$refs[formName].validate((valid) => {
-                if (valid) {
-                    $.ajax({
-                        url: baseUrl + '/agent/checkAgentLoginName',
-                        type: 'POST',
-                        data: {
-                            'agentLoginName': _this.ruleForm.accountNum
-                        },
-                        async: false,
-                        success: function(res) {
-                            if (res == 0) {
-                                _this.dialogVisible = false;
-                                _this.$message({
-                                    message: '成功了',
-                                    type: 'success'
-                                });
-                                var params = new URLSearchParams();
-                                params.append('agentSeq', _this.ruleForm.agentNameVal);
-                                params.append('password', _this.$md5(agentPhone.slice(-6)));
-                                params.append('agentLoginName', _this.ruleForm.accountNum);
-                                params.append('agentPackSeq', _this.ruleForm.agentRoleVal);
-                                _this.$axios.post(baseUrl + '/agentpackage/updateNewAgentPackage', params).then(res => {
-                                    //成功后再请求
-                                    _this.tableInit(1, 10);
-                                    _this.page.pagecurrent = 1;
-                                }).catch(err => {
-                                    console.log(err);
-                                })
-                            } else if (res == 1) {
-                                _this.dialogShow = true;
-                                _this.dialogShowValue = '这个账号已经存在';
-                            }
-                        },
-                        error: function(err) {
-                            console.log(err);
-                        }
-                    })
-                } else {
-                    _this.$message({
-                        message: '信息验证不成功',
-                        type: 'error'
-                    });
-                    return false;
-                }
-            })
-        },
         jump: function() {
             this.$router.push('/MerconfigMan');
         },
@@ -367,12 +296,6 @@ html, body, #app, .el-container {
         color: #3399ff;
         font-size: 22px;
         & .el-button:nth-of-type(1) {
-            position: absolute;
-            right: 145px;
-            top: 10px;
-            width: 100px;
-        }
-        & .el-button:nth-of-type(2) {
             width: 100px;
             position: absolute;
             right: 20px;

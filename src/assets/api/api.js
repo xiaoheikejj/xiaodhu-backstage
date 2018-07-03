@@ -2,7 +2,9 @@ import { Loading , Message } from 'element-ui';
 import axios from 'axios';
 import qs from 'qs';
 
-export const baseUrl = 'http://120.27.245.101:9001/smart.call'; 
+// export const baseUrl = 'http://120.27.245.101:9001/smart.call';
+export const baseUrl = 'http://192.168.1.249:8080/smart.call';
+
 
 // 通用ajax请求方法-不含token
 export const Ajax = (path, method, params) => {

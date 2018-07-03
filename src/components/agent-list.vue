@@ -27,7 +27,8 @@
             :data='tableData'
             tooltip-effect="dark"
             style="width: 100%"
-            @cell-click='tableClick'>
+            @cell-click='tableClick'
+            stripe>
                 <el-table-column type="selection"></el-table-column>
                 <el-table-column prop='agentSeq' label="代理商编号"></el-table-column>
                 <el-table-column prop="agentName" label="代理商名称"></el-table-column>
@@ -35,9 +36,12 @@
                 <el-table-column prop="location" label="所在地"></el-table-column>
                 <el-table-column prop="mercNum" label="代理商户数量"></el-table-column>
                 <el-table-column prop="portNum" label="剩余机器人数量"></el-table-column>
-                <el-table-column prop="status" label="状态"></el-table-column>
+                <el-table-column property="status" label="状态"></el-table-column>
                 <el-table-column label="操作">
                     <template slot-scope="scope">
+                        <el-button type="text" size="small"
+                            @click="addNew();dialog.OpenAccount = true"
+                            class="openaccount">开户</el-button>
                         <el-button type="text" size="small" @click="clearData();dialog.addRobot = true">增加机器人</el-button>
                         <el-button type="text" size="small" @click="lookData();dialog.lookData = true">查看资料</el-button>
                     </template>
@@ -170,7 +174,32 @@
             @size-change="handleSizeChange"
             @current-change="handleCurrentChange"
             :current-page.sync="page.pagecurrent"
-            :total="page.pagecount"></el-pagination>
+            :total="page.pagecount">
+        </el-pagination>
+
+        <!-- 新增代理商 -->
+        <el-dialog class="agentPowerDialog"
+        title="代理商开户"
+        :visible.sync="dialog.OpenAccount"
+        width="30%">
+        <el-form :model="ruleForm2" :rules="rules2" ref="ruleForm2" label-width="120px" class="demo-ruleForm">
+            <el-form-item label="代理商姓名：" prop="agentNameVal">
+                <el-input v-model='ruleForm2.agentNameVal' disabled></el-input>
+            </el-form-item>
+            <el-form-item label="代理商账号：" prop="accountNum">
+                <el-input v-model='ruleForm2.accountNum'></el-input>
+            </el-form-item>
+            <el-form-item label="权限角色选择：" prop="agentRoleVal">
+                <el-select v-model='ruleForm2.agentRoleVal' >
+                    <el-option v-for='(i, index) in ruleForm2.dialogAgentRole' :label='i.agentPackName' :value='i.agentPackSeq' :key='"agentPowerDialog2" + index'></el-option>
+                </el-select>
+            </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="dialog.OpenAccount = false">取 消</el-button>
+            <el-button type="primary" @click="checkAccount('ruleForm2')">确 定</el-button>
+        </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -211,7 +240,8 @@ export default {
             statusNoNul: '',
             dialog: {       //弹窗
                 lookData: false,
-                addRobot: false
+                addRobot: false,
+                OpenAccount: false
             },
             row: {},
             datumData: {},
@@ -256,7 +286,22 @@ export default {
                 status: "",
                 province: "",
                 city: ""
-            }
+            },
+            ruleForm2: {
+                agentNameVal: "",
+                accountNum: "",
+                agentRoleVal: "",
+                dialogAgentName: "",
+                dialogAgentRole: ""
+            },
+            rules2: {
+                accountNum: [
+                    { required: true, message: '请填写代理商账号', trigger: 'blur' },
+                ],
+                agentRoleVal: [
+                    { required: true, message: '请选择权限角色', trigger: 'change' },
+                ]
+            },
         }
     },
     created: function() {
@@ -287,6 +332,7 @@ export default {
             $.ajax({
                 url: baseUrl + '/agent/getAgentListByPage',
                 type: 'post',
+                async: false,
                 xhrFields: {
                       withCredentials: true
                 },
@@ -300,7 +346,6 @@ export default {
                     size: size
                 },
                 success: function(res) {
-                    console.log(res);
                     _this.tableData = res.dataInfo;
                     _this.page.pagecount = res.count;
                     _this.tableData.forEach(function(ele, index) {
@@ -311,17 +356,28 @@ export default {
                             ele.status = '停用';
                         } else if (ele.agentStatus == 2) {
                             ele.status = '冻结'
+                        } else if (ele.agentStatus == 3) {
+                            ele.status = "未开户"
                         }
                     })
+
+                    // _this.tableData.forEach(function(val, index) {
+                    //
+                    //     if (val.status === "未开户") {
+                    //
+                    //     } else {
+                    //
+                    //     }
+                    // })
                 },
                 error: function(err) {
                     console.log(err);
                 }
             })
         },
-        tableClick: function(row) {
+        tableClick: function(row, column) {
             this.row = row;
-            console.log(row);
+            console.log(row, column);
         },
         /**
          * [description]
@@ -516,6 +572,87 @@ export default {
             })
 
         },
+        /**
+         * 新增代理商开户
+         * @return {[type]} [description]
+         */
+        addNew: function() {
+            var that = this;
+            this.$axios(baseUrl + '/agentpackage/getAgentPackageList')
+            .then(res => {
+                that.ruleForm2.dialogAgentRole = res.data;
+            })
+            .catch(err => {
+                console.log(err);
+            });
+            this.$nextTick(function() {
+                that.ruleForm2.agentNameVal = that.row.agentName;
+            })
+        },
+        checkAccount: function(formName) {
+            var that = this;
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    new Promise(function(resolve, reject) {
+                        that.$axios({
+                            url: baseUrl + '/agent/checkAgentLoginName',
+                            method: 'post',
+                            data: that.$qs.stringify({
+                                'agentLoginName': that.ruleForm2.accountNum
+                            })
+                        })
+                        .then(res => {
+                            if (res.data === 0) {
+                                resolve();
+                            } else if (res.data == 1) {
+                                reject();
+                            }
+                        })
+                        .catch(err => {
+                            console.log(err);
+                        })
+                    })
+                    .then(function() {
+                        that.$axios({
+                            url: baseUrl + "/agentpackage/updateNewAgentPackage",
+                            method: "post",
+                            data: that.$qs.stringify({
+                                agentSeq: that.row.agentSeq,
+                                password: that.$md5(that.row.agentBusinessEntityContactPhone.slice(-6)),
+                                agentLoginName: that.ruleForm2.accountNum,
+                                agentPackSeq: that.ruleForm2.agentRoleVal
+                            })
+                        })
+                        .then(res => {
+                            if (res.data === 1) {
+                                that.$message({
+                                    message: '该代理商已开户',
+                                    type: 'warning'
+                                })
+                            } else if (res.data === 0) {
+                                that.$message({
+                                    message: '开户成功',
+                                    type: 'success'
+                                })
+                            }
+                            that.dialog.OpenAccount = false;
+                            that.tableInit(1, 10);
+                        })
+                    }).catch(err => {
+                        that.$message({
+                            message: '代理商账号已存在',
+                            type: 'error'
+                        });
+                    })
+                } else {
+                    that.$message({
+                        message: '信息验证不成功',
+                        type: 'error'
+                    });
+                    return false;
+                }
+            })
+        },
         addNewAgent: function() {
             this.$router.push('/addNewAgent');
         }
@@ -548,15 +685,12 @@ export default {
     }
     .search {
         background-color: #f0f3f6;
+        padding: 14px 0;
         .content-ipt {
-            margin: 14px 0;
             background-color: #fff;
             padding: 24px 20px;
             .el-input {
-                width: auto;
-                input {
-                    background-color: #f0f3f6;
-                }
+                width: 120px;
             }
         }
     }

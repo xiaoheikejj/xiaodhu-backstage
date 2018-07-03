@@ -37,7 +37,7 @@
                         <el-input v-model="ruleForm.linkman"></el-input>
                     </el-form-item>
                     <el-form-item label="联系人手机号：" prop="linkmanPhone">
-                        <el-input v-model="ruleForm.linkmanPhone" maxlength="11"></el-input>
+                        <el-input v-model="ruleForm.linkmanPhone" oninput="value=value.replace(/[^\d]/g,'')" maxlength="11"></el-input>
                     </el-form-item>
                     <el-form-item label="邮箱：" prop="email">
                         <el-input v-model="ruleForm.email" maxlength="50"></el-input>

@@ -480,7 +480,7 @@ html, body, #app, .el-container {
 .simCard {
     .el-header {
         line-height: 60px;
-        font-size: 22px;
+        font-size: 18px;
         color: #3399ff;
         background-color: #fff;
         position: relative;
@@ -508,7 +508,6 @@ html, body, #app, .el-container {
                 color: #333;
                 font-size: 16px;
                 letter-spacing: 3px;
-                font-weight: bold;
                 .el-input {
                     margin-right: 20px;
                     width: auto;

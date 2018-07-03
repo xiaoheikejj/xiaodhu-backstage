@@ -100,9 +100,13 @@ export default {
             resSeq = [];
         var params = this.$qs.stringify({'groupId': 1})
         this.$axios.post(baseUrl + '/userresource/getUserResourceList', params).then(res => {
-            _this.firstName = res.data;
+            _this.firstName = res.data.dataInfo;
         }).catch(err => {
-            console.log(err);
+            _this.$message({
+                message: '登陆信息已过期',
+                type: 'error'
+            });
+            _this.$router.push("/");
         })
         this.admin = sessionStorage.getItem('userName');
     },
@@ -176,6 +180,10 @@ i {
     font-style: normal;
 }
 #Main {
+    .el-pagination {
+        text-align: center;
+        margin: 20px 0;
+    }
     .el-submenu .el-menu-item.is-active {
         min-width: 180px;
         color: #3399ff !important;
