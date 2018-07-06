@@ -9,6 +9,7 @@ import router from './router'
 import md5 from 'js-md5'
 import validator from 'vue-validator'
 import Qs from 'qs'
+import store from "./store"
 
 Vue.use(ElementUI)
 Vue.use(validator)
@@ -23,6 +24,7 @@ Vue.prototype.$qs = Qs
 new Vue({
     el: '#app',
     router,
+    store,  //使用store
     // render: h => h(App)
     components: { App },
     template: '<App/>'
