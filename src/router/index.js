@@ -3,9 +3,11 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-import Main from '../components/main.vue'
+import Main from '../components/common/main.vue'
 // 登陆
 import Login from '../components/login/Login.vue'
+// 主页1
+import HomePage1 from '../components/homepage/homepage1.vue'
 //商户列表
 import merchantList from '../components/merchantList.vue'
 import proFormulation from '../components/pro-formulation.vue'
@@ -59,6 +61,11 @@ export default new Router({
             path: '/main',
             component: Main,
             children: [
+                //主页1
+                {
+                    path: '/homepage1',
+                    component: HomePage1
+                },
                 // 商户列表
                 {
                     path: '/',
