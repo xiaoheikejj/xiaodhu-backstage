@@ -27,7 +27,8 @@
         tooltip-effect="dark"
         style="width: 100%"
         :row-class-name="tableRowClassName"
-        @cell-click='getRow'>
+        @cell-click='getRow'
+        stripe>
             <el-table-column type="selection"></el-table-column>
             <el-table-column prop='userSeq' label="用户编号"></el-table-column>
             <el-table-column prop="userName" label="用户名称"></el-table-column>
@@ -328,14 +329,6 @@ export default {
         },
         agentPower: function() {
             this.$router.push('/agentPower')
-        },
-        tableRowClassName({row, rowIndex}) {
-            if (rowIndex === 1) {
-                return 'warning-row';
-            } else if (rowIndex === 3) {
-                return 'success-row';
-            }
-            return '';
         }
     }
 }

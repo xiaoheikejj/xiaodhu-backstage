@@ -228,9 +228,11 @@ export default {
         // sim列表
         this.tableInit(1, 10);
         // 弹窗sim卡归属列表
-        this.$axios.get(baseUrl + '/merchant/getMerchantList').then(res => {
-            _this.ascription_SIM = res.data;
-        }).catch(err => {
+        this.$axios(baseUrl + '/merchant/getMerchantList')
+        .then(res => {
+            _this.ascription_SIM = res.data.dataInfo;
+        })
+        .catch(err => {
             console.log(err);
         })
     },
@@ -254,16 +256,16 @@ export default {
             var sendObj = {
                 mercSeq: parseInt(this.ruleForm.ascriptionSIM)
             }
-            $.ajax({
+            this.$axios({
                 url: baseUrl + '/sim/getDeviceByMercSeq',
-                type: 'POST',
-                data: sendObj,
-                success: function(res) {
-                    _this.machine_List = res;
-                },
-                error: function(err) {
-                    console.log(err);
-                }
+                method: 'post',
+                data: _this.$qs.stringify(sendObj)
+            })
+            .then(res => {
+                _this.machine_List = res.data.dataInfo;
+            })
+            .catch(err => {
+                console.log(err);
             })
         },
         tableInit: function(page, size) {
@@ -307,16 +309,16 @@ export default {
                 mercSeq: parseInt(this.ruleForm.ascriptionSIM),
                 deviceCode: this.ruleForm.selectMachine
             }
-            $.ajax({
+            this.$axios({
                 url: baseUrl + '/sim/getPortByDevice',
-                type: 'POST',
-                data: sendObj,
-                success: function(res) {
-                    _this.jackList = res;
-                },
-                error: function(err) {
-                    console.log(err);
-                }
+                method: 'post',
+                data: this.$qs.stringify(sendObj)
+            })
+            .then(res => {
+                this.jackList = res.data.dataInfo;
+            })
+            .catch(err => {
+                console.log(err);
             })
         },
         submit: function(formName) {
@@ -336,14 +338,14 @@ export default {
                         success: function(res) {
                             console.log(res)
                             _this.saveInformation = false;
-                            if (res == 1) {
+                            if (res.status === "1") {
                                 _this.$message({
-                                    message: '添加失败（可能原因：1:sim号已存在，2:端口已被占用）',
+                                    message: res.errorMsg,
                                     type: 'warning'
                                 });
-                            } else if (res == 0) {
+                            } else if (res.status === "0") {
                                 _this.$message({
-                                    message: '成功',
+                                    message: res.errorMsg,
                                     type: 'success'
                                 });
                                 _this.tableInit(1, 10);

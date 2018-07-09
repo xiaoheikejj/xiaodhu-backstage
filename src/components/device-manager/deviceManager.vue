@@ -293,10 +293,10 @@ export default {
             //传入给后台的数据
             this.$refs[formName].validate((valid) => {
                 if (valid) {
-                    _this.$axios({
+                    this.$axios({
                         url: baseUrl + '/device/addDevice',
                         method: 'post',
-                        data: _this.$qs.stringify({
+                        data: this.$qs.stringify({
                             deviceCode: this.ruleForm.machineCode,
                             deviceProName: this.ruleForm.factory,
                             deviceModel: this.ruleForm.model,
@@ -307,14 +307,14 @@ export default {
                         })
                     })
                     .then(res => {
-                        if (res.data === 1) {
-                            _this.$message({
-                               message: '设备码重复',
+                        if (res.data.status === "1") {
+                            this.$message({
+                               message: res.data.errorMsg,
                                type: 'warning'
                            });
-                       } else if (res.data === 0) {
-                           _this.$message({
-                              message: '成功',
+                       } else if (res.data.status === "0") {
+                           this.$message({
+                              message: res.data.errorMsg,
                               type: 'success'
                           });
                        }
@@ -322,6 +322,7 @@ export default {
                     .catch(err => {
                         console.log(err);
                     })
+                    this.tableInit(1, 10);
                     this.dialogVisible = false;
                 } else {
                     _this.$message({
