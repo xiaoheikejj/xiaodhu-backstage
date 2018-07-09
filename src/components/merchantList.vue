@@ -6,7 +6,7 @@
         <div class="search">
             <div class="inputs">
                 <div>
-                    <span>商品名称/编号/关键字 : </span>
+                    <span>商户名称/编号/关键字 : </span>
                     <el-input style="margin-right: 30px" class="merchat" v-model='searchValue.commodityName'></el-input>
                     <span>商户入网时间 : </span>
                     <el-date-picker
